@@ -1,5 +1,5 @@
 output "bucket_name" {
-    value = aws_s3_bucket.notes_bucket.bucket_name
+    value = aws_s3_bucket.notes_bucket.bucket
 }
 
 output "lambda_function_name" {

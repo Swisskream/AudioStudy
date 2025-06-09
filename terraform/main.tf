@@ -7,20 +7,22 @@ resource "aws_s3_bucket" "notes_bucket" {
 }
 
 resource "aws_iam_role" "lambda_exec_role" {
-    name = "lambda_exec_role"
+  name = "lambda_exec_role"
 
-    assume_role_policy = jsonencode({
-        Version = "2012-10-17"
-        Statement = [
-            {
-                Action = "sts:AssumeRole"
-                Effect = "Allow"
-                Principal = " {
-                    Service = "lambda.amazonaws.com"
-                }
-            }
-        ]
-    })
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      }
+    }
+  ]
+}
+EOF
 }
 
 resource "aws_iam_policy" "lambda_policy" {
@@ -35,7 +37,7 @@ resource "aws_iam_policy" "lambda_policy" {
                     "s3:GetObject",
                     "s3:PutObject"
                 ]
-                Resource = "${aws_s3_bucket.notes_bucket.arn}/*
+                Resource = "${aws_s3_bucket.notes_bucket.arn}/*"
             },
             {
                 Effect = "Allow"
@@ -49,7 +51,7 @@ resource "aws_iam_policy" "lambda_policy" {
                 Action = [
                     "logs:CreateLogGroup",
                     "logs:CreateLogStream",
-                    "logs:PutLogEvents
+                    "logs:PutLogEvents"
                 ]
                 Resource = "*"
             }
@@ -63,12 +65,12 @@ resource "aws_iam_role_policy_attachment" "lambda_policy_attach" {
 }
 
 resource "aws_lambda_function" "text_to_speech" {
-    filename = "lambda.zip"
+    filename = "lambda_function.zip"
     function_name = "TextToSpeech"
-    role = "aws_iam_role.lambda_exec_role.arn"
-    handle = "handler.lambda_handler"
+    role = aws_iam_role.lambda_exec_role.arn
+    handler = "handler.lambda_handler"
     runtime = "python3.11"
-    source_code_hash = filebase64sha256("lambda.zip")
+    source_code_hash = filebase64sha256("lambda_function.zip")
 
     environment {
         variables = {
